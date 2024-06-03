@@ -3,11 +3,9 @@ const app = express();
 const cors = require('cors');
 const port = process.env.PORT || 5000
 const dotenv = require('dotenv');
-dotenv.config();
-
-app.use(cors());
-app.use(express.json());
-
+const cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken')
+require('dotenv').config()
 
 const corsOptions = {
   origin: ['http://localhost:5173', 'http://localhost:5174'],
@@ -16,7 +14,14 @@ const corsOptions = {
 }
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(cookieParser())
+
+
+
+
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASS}@cluster0.goboxhh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -35,6 +40,8 @@ async function run() {
     // Send a ping to confirm a successful connection
     const db = client.db('tourGuide')
     const packageCollection = db.collection('packages')
+    const userCollection = db.collection('users')
+   
 
 
 
@@ -69,10 +76,44 @@ async function run() {
     })
 
 
-    
+    //save user on the collection
+  app.put('/user', async(req, res)=>{
+    const user = req.body
+    const query = {email : user.email}
+    const isExist = await userCollection.findOne(query)
+    if(isExist) return res.send(isExist)
+      const options = {upsert : true}
+    const updateDoc = {
+      $set: {
+        ...user,
+      }
+    }
+    const result = await userCollection.updateOne(query, updateDoc, options)
+    res.send(result)
+  })
+
+    //get all users
+    app.get('/users', async(req, res)=>{
+      const result = await userCollection.find().toArray()
+      res.send(result)
+    })
+    //post package
     app.post('/package', async(req, res)=>{
       const package = req.body;
       const result = await packageCollection.insertOne(package)
+      res.send(result)
+    })
+
+    app.get('/packages', async(req, res)=>{
+      const result = await packageCollection.find().toArray()
+      res.send(result)
+    })
+
+    //get single package with id
+    app.get('/package/:id', async(req, res)=>{
+      const id= req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await packageCollection.findOne(query)
       res.send(result)
     })
     await client.db("admin").command({ ping: 1 });

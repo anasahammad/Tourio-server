@@ -42,6 +42,7 @@ async function run() {
     const packageCollection = db.collection('packages')
     const userCollection = db.collection('users')
     const bookingCollection = db.collection('bookings')
+    const wishlistCollection = db.collection('wishlists')
    
 
 
@@ -182,6 +183,21 @@ async function run() {
       const result = await bookingCollection.insertOne(newBooking)
       res.send(result)
     })
+
+
+    //save wishlist on db
+    app.post('/wishlist', async(req, res)=>{
+      const wishlist = req.body;
+     const query = {wishlistId: wishlist.wishlistId , touristEmail : wishlist.touristEmail }
+     const isExist = await wishlistCollection.findOne(query)
+     if(isExist) {
+       return res.status(409).send({message : "Already added to your wishlist"})
+     }
+      const result = await wishlistCollection.insertOne(wishlist)
+      res.send(result)
+    })
+
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {

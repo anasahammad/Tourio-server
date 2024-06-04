@@ -81,7 +81,20 @@ async function run() {
     const user = req.body
     const query = {email : user.email}
     const isExist = await userCollection.findOne(query)
-    if(isExist) return res.send(isExist)
+    if(isExist) {
+      if(user.status === 'requested'){
+        const updateDoc = {
+            $set: {
+              status : user?.status
+            }
+        }
+        const result = await userCollection.updateOne(query, updateDoc)
+        res.send(result)
+      } 
+      else{
+        return res.send(isExist)
+      }
+    }
       const options = {upsert : true}
     const updateDoc = {
       $set: {
@@ -92,11 +105,37 @@ async function run() {
     res.send(result)
   })
 
+
+  
     //get all users
     app.get('/users', async(req, res)=>{
       const result = await userCollection.find().toArray()
       res.send(result)
     })
+
+    //get specific user
+    app.get('/user/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = {email: email}
+      const result = await userCollection.findOne(query)
+      res.send(result)
+    })
+
+    //change  role
+    app.patch('/users/update/:email', async(req, res)=>{
+      const email = req.params.email;
+      const user = req.body;
+      console.log(user, email);
+      const query = {email : email}
+      const updatedDoc = {
+        $set: {
+          ...user, 
+        }
+      }
+      const result = await userCollection.updateOne(query, updatedDoc)
+      res.send(result)
+    })
+   
     //post package
     app.post('/package', async(req, res)=>{
       const package = req.body;

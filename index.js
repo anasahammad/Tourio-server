@@ -136,6 +136,13 @@ async function run() {
       res.send(result)
     })
    
+
+    //get all tour guid
+    app.get('/tour-guides', async(req, res)=>{
+      const query = {role : 'guide'}
+      const result = await userCollection.find(query).toArray()
+      res.send(result)
+    })
     //post package
     app.post('/package', async(req, res)=>{
       const package = req.body;

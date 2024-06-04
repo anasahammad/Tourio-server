@@ -41,6 +41,7 @@ async function run() {
     const db = client.db('tourGuide')
     const packageCollection = db.collection('packages')
     const userCollection = db.collection('users')
+    const bookingCollection = db.collection('bookings')
    
 
 
@@ -143,6 +144,14 @@ async function run() {
       const result = await userCollection.find(query).toArray()
       res.send(result)
     })
+
+    //get individual tour guide for profile
+    app.get('/tour-guide/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = {email : email}
+      const result = await userCollection.findOne(query)
+      res.send(result)
+    })
     //post package
     app.post('/package', async(req, res)=>{
       const package = req.body;
@@ -160,6 +169,17 @@ async function run() {
       const id= req.params.id;
       const query = {_id: new ObjectId(id)}
       const result = await packageCollection.findOne(query)
+      res.send(result)
+    })
+
+
+    // Save bookings on the database 
+    app.post('/booking', async(req, res)=>{
+      const newBooking = req.body;
+      const query = { bookingId: newBooking.bookingId, touristEmail: newBooking.touristEmail };
+      const isExist = await bookingCollection.findOne(query)
+      if(isExist) return res.status(409).send({message: "You have Already Booked this Tour"})
+      const result = await bookingCollection.insertOne(newBooking)
       res.send(result)
     })
     await client.db("admin").command({ ping: 1 });

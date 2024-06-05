@@ -73,6 +73,7 @@ async function run() {
     const userCollection = db.collection('users')
     const bookingCollection = db.collection('bookings')
     const wishlistCollection = db.collection('wishlists')
+    const storyCollection = db.collection('storys')
    
 
 
@@ -108,6 +109,8 @@ async function run() {
     })
 
 
+    // ---------------------User Collection APies ----------------------
+    
     //save user on the collection
   app.put('/user', async(req, res)=>{
     const user = req.body
@@ -183,6 +186,10 @@ async function run() {
       const result = await userCollection.findOne(query)
       res.send(result)
     })
+
+
+    // ----------------------------All package collection api------------
+
     //post package
     app.post('/package', async(req, res)=>{
       const package = req.body;
@@ -203,7 +210,9 @@ async function run() {
       res.send(result)
     })
 
-
+   
+    //-------------------------------All booking collection api------------
+ 
     // Save bookings on the database 
     app.post('/booking', async(req, res)=>{
       const newBooking = req.body;
@@ -214,6 +223,9 @@ async function run() {
       res.send(result)
     })
 
+
+
+    //----------------------------All Wishlist collection  Api------------
 
     //save wishlist on db
     app.post('/wishlists', async(req, res)=>{
@@ -243,6 +255,21 @@ async function run() {
       res.send(result)
     })
 
+
+    // -----------------------Story Collection Apis--------------------
+
+    //post a story on db
+    app.post('/story', async(req, res)=>{
+      const newStory = req.body;
+      const result = await storyCollection.insertOne(newStory)
+      res.send(result)
+    })
+
+    //get all stories
+    app.get('/stories', async(req, res)=>{
+      const result = await storyCollection.find().toArray()
+      res.send(result)
+    })
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {

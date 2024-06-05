@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 const port = process.env.PORT || 5000
 const dotenv = require('dotenv');
+const nodemailer = require("nodemailer");
 const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
@@ -19,7 +20,36 @@ app.use(express.json());
 app.use(cookieParser())
 
 
+//email sending 
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  host: "smtp.gmail.email",
+  port: 587,
+  secure: false, // Use `true` for port 465, `false` for all other ports
+  auth: {
+    user: process.env.TRANSPORT_EMAIL,
+    pass: process.env.TRANSPORT_PASS,
+  },
+});
 
+//send email to the guide
+app.post('/contact', async (req, res) => {
+  const { touristEmail, guideEmail, message } = req.body;
+
+  const mailOptions = {
+    from: touristEmail,
+    to: guideEmail,
+    subject: 'Message from Tourist',
+    text: message
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).send({ message: 'Email sent successfully!' });
+  } catch (error) {
+    res.status(500).send({ message: 'Error sending email' });
+  }
+});
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASS}@cluster0.goboxhh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -186,7 +216,7 @@ async function run() {
 
 
     //save wishlist on db
-    app.post('/wishlist', async(req, res)=>{
+    app.post('/wishlists', async(req, res)=>{
       const wishlist = req.body;
      const query = {wishlistId: wishlist.wishlistId , touristEmail : wishlist.touristEmail }
      const isExist = await wishlistCollection.findOne(query)
@@ -197,6 +227,21 @@ async function run() {
       res.send(result)
     })
 
+    //get a specific tourist wishlist
+    app.get('/wishlist/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = {touristEmail : email}
+      const result = await wishlistCollection.find(query).toArray()
+      res.send(result)
+    })
+ 
+    //delete api for remove wishlist for a tourist
+    app.delete('/wish/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id : new ObjectId(id)}
+      const result = await wishlistCollection.deleteOne(query)
+      res.send(result)
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");

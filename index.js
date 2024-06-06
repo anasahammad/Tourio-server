@@ -238,7 +238,37 @@ async function run() {
     })
 
 
+    //get a booking for a specific tourist
+    app.get('/booking/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = {touristEmail : email}
+      const result = await bookingCollection.find(query).toArray()
+      res.send(result)
+    })
 
+    //get all assign tours for a specific guide
+    app.get('/assign-tours/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = {guideEmail: email}
+      const result = await bookingCollection.find(query).toArray()
+      res.send(result)
+    })
+
+    //change the status of a booking from in review 
+    app.patch('/update-status/:id', async(req, res)=>{
+      const id = req.params.id;
+      
+      const status = req.body.status;
+     
+      const query = {bookingId : id}
+     
+      const updatedDoc = {
+        $set: {status},
+      }
+
+      const result = await bookingCollection.updateOne(query, updatedDoc)
+      res.send(result)
+    })
     //----------------------------All Wishlist collection  Api------------
 
     //save wishlist on db

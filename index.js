@@ -299,7 +299,10 @@ async function run() {
     app.get('/wishlist/:email', async(req, res)=>{
       const email = req.params.email;
       const query = {touristEmail : email}
-      const result = await wishlistCollection.find(query).toArray()
+
+      const page = parseInt(req.query.page)
+      const size = parseInt(req.query.size)
+      const result = await wishlistCollection.find(query).skip((page - 1) * size).limit(size).toArray()
       res.send(result)
     })
  
@@ -341,6 +344,14 @@ async function run() {
       const email = req.params.email;
       const query = {email : email}
       const count = await bookingCollection.estimatedDocumentCount(query)
+      res.send({count})
+    })
+
+    //pagination: wishlist count
+    app.get('/wishlist-count/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = {email : email}
+      const count = await wishlistCollection.estimatedDocumentCount(query)
       res.send({count})
     })
     await client.db("admin").command({ ping: 1 });

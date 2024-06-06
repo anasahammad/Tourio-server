@@ -260,9 +260,11 @@ async function run() {
     })
     //get all assign tours for a specific guide
     app.get('/assign-tours/:email', async(req, res)=>{
+      const page = parseInt(req.query.page)
+      const size = parseInt(req.query.size)
       const email = req.params.email;
       const query = {guideEmail: email}
-      const result = await bookingCollection.find(query).toArray()
+      const result = await bookingCollection.find(query).skip((page - 1) * size).limit(size).toArray()
       res.send(result)
     })
 
@@ -352,6 +354,14 @@ async function run() {
       const email = req.params.email;
       const query = {email : email}
       const count = await wishlistCollection.estimatedDocumentCount(query)
+      res.send({count})
+    })
+
+    //pagination: assign tour count
+    app.get('/tour-count/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = {email : email}
+      const count = await bookingCollection.estimatedDocumentCount(query)
       res.send({count})
     })
     await client.db("admin").command({ ping: 1 });

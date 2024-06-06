@@ -243,9 +243,11 @@ async function run() {
 
     //get a booking for a specific tourist
     app.get('/booking/:email', async(req, res)=>{
+      const page = parseInt(req.query.page)
+      const size = parseInt(req.query.size)
       const email = req.params.email;
       const query = {touristEmail : email}
-      const result = await bookingCollection.find(query).toArray()
+      const result = await bookingCollection.find(query).skip((page -1) * size).limit(size).toArray()
       res.send(result)
     })
 
@@ -327,11 +329,19 @@ async function run() {
 
     // *************************************Pagination*****************************
 
-    //pagination count 
+    //pagination: user count 
     app.get('/user-count', async(req, res)=>{
       const count = await userCollection.estimatedDocumentCount()
       res.send({count})
        
+    })
+
+    //pagination: bookings count
+    app.get('/booking-count/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = {email : email}
+      const count = await bookingCollection.estimatedDocumentCount(query)
+      res.send({count})
     })
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");

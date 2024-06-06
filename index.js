@@ -186,7 +186,21 @@ async function run() {
       const result = await userCollection.findOne(query)
       res.send(result)
     })
-
+    
+    //update tourGuide profile
+    app.put('/tour-guide-profile/:email', async(req, res)=>{
+      const email = req.params.email;
+      const updatedInfo = req.body;
+      const query = {email : email}
+      const options = {upsert: true}
+      const updatedDoc = {
+        $set : {
+          ...updatedInfo,
+        }
+      }
+      const result = await userCollection.updateOne(query, updatedDoc, options)
+      res.send(result)
+    })
 
     // ----------------------------All package collection api------------
 

@@ -144,7 +144,10 @@ async function run() {
   
     //get all users
     app.get('/users', async(req, res)=>{
-      const result = await userCollection.find().toArray()
+      const page = parseInt(req.query.page)
+      const size = parseInt(req.query.size)
+      
+      const result = await userCollection.find().skip((page -1) * size).limit(size).toArray()
       res.send(result)
     })
 
@@ -325,8 +328,9 @@ async function run() {
     // *************************************Pagination*****************************
 
     //pagination count 
-    app.get('/count', async(req, res)=>{
-      const totalUsers = await userCollection.countDocuments()
+    app.get('/user-count', async(req, res)=>{
+      const count = await userCollection.estimatedDocumentCount()
+      res.send({count})
        
     })
     await client.db("admin").command({ ping: 1 });

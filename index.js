@@ -146,8 +146,21 @@ async function run() {
     app.get('/users', async(req, res)=>{
       const page = parseInt(req.query.page)
       const size = parseInt(req.query.size)
+      const search = req?.query.search;
+
+      let query = {}
+      if(search){
+
+        query =  {
+          $or : [
+           { email : {$regex : search, $options: 'i'}},
+           {name : {$regex : search, $options: 'i'}}
+          ]
+        }
+        
+      }
       
-      const result = await userCollection.find().skip((page -1) * size).limit(size).toArray()
+      const result = await userCollection.find(query).skip((page -1) * size).limit(size).toArray()
       res.send(result)
     })
 

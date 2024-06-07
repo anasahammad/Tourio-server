@@ -147,8 +147,10 @@ async function run() {
       const page = parseInt(req.query.page)
       const size = parseInt(req.query.size)
       const search = req?.query.search;
-
+      const filter = req?.query.filter;
+      console.log(filter);
       let query = {}
+      
       if(search){
 
         query =  {
@@ -159,6 +161,10 @@ async function run() {
         }
         
       }
+
+      if(filter){
+        query.role = filter
+      } 
       
       const result = await userCollection.find(query).skip((page -1) * size).limit(size).toArray()
       res.send(result)

@@ -74,6 +74,7 @@ async function run() {
     const bookingCollection = db.collection('bookings')
     const wishlistCollection = db.collection('wishlists')
     const storyCollection = db.collection('storys')
+    const reviewCollection = db.collection('reviews')
    
 
 
@@ -148,9 +149,9 @@ async function run() {
       const size = parseInt(req.query.size)
       const search = req?.query.search;
       const filter = req?.query.filter;
-      console.log(filter);
-      let query = {}
       
+      let query = {}
+
       if(search){
 
         query =  {
@@ -192,8 +193,10 @@ async function run() {
       const result = await userCollection.updateOne(query, updatedDoc)
       res.send(result)
     })
+    
    
 
+    
     //get all tour guid
     app.get('/tour-guides', async(req, res)=>{
       const query = {role : 'guide'}
@@ -224,6 +227,21 @@ async function run() {
       res.send(result)
     })
 
+     //****************************************Review Collection Api****************** */
+
+     app.post('/review', async(req, res)=>{
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review)
+      res.send(result)
+    })
+
+    app.get('/reviews/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = {guideEmail : email}
+      const result = await reviewCollection.find(query).toArray()
+      res.send(result)
+    })
+
     // ----------------------------All package collection api------------
 
     //post package
@@ -234,6 +252,7 @@ async function run() {
     })
 
     app.get('/packages', async(req, res)=>{
+      
       const result = await packageCollection.find().toArray()
       res.send(result)
     })
@@ -245,7 +264,14 @@ async function run() {
       const result = await packageCollection.findOne(query)
       res.send(result)
     })
+    // app.get('/pack/:type', async(req, res)=>{
+    //   const type = req.params.type;
+    //   const query = {tourTypes: type }
+    //   const result = await packageCollection.findOne(query)
+    //   res.send(result)
+    // })
 
+    
    
     //-------------------------------All booking collection api------------
  
@@ -348,6 +374,14 @@ async function run() {
     //get all stories
     app.get('/stories', async(req, res)=>{
       const result = await storyCollection.find().toArray()
+      res.send(result)
+    })
+
+    //get a specific story details
+    app.get('/story/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await storyCollection.findOne(query)
       res.send(result)
     })
 

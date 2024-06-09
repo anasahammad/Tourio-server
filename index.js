@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config()
 
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://tourio-a04d8.web.app'],
   credentials: true,
   optionSuccessStatus: 200,
 }
@@ -23,7 +23,7 @@ app.use(cookieParser())
 //middleWare
 const verifyToken = async (req, res, next)=>{
     const token = req?.cookies.token;
-    console.log(token);
+  
     if(!token) {
       return res.status(401).send({message: 'unauthorized access'})
     }
@@ -302,12 +302,15 @@ async function run() {
       const result = await packageCollection.findOne(query)
       res.send(result)
     })
-    // app.get('/pack/:type', async(req, res)=>{
-    //   const type = req.params.type;
-    //   const query = {tourTypes: type }
-    //   const result = await packageCollection.findOne(query)
-    //   res.send(result)
-    // })
+    
+    app.get('/tour-type/:type', async(req, res)=>{
+
+      const type = req.params.type;
+      
+      const query = {tourTypes: type }
+      const result = await packageCollection.find(query).toArray()
+      res.send(result)
+    })
 
     
    
@@ -439,26 +442,28 @@ async function run() {
     //pagination: bookings count
     app.get('/booking-count/:email', async(req, res)=>{
       const email = req.params.email;
-      const query = {email : email}
-      const count = await bookingCollection.estimatedDocumentCount(query)
+      const query = {touristEmail : email}
+      const count = await bookingCollection.countDocuments(query)
       res.send({count})
     })
 
     //pagination: wishlist count
     app.get('/wishlist-count/:email', async(req, res)=>{
       const email = req.params.email;
-      const query = {email : email}
-      const count = await wishlistCollection.estimatedDocumentCount(query)
+      const query = {touristEmail : email}
+      const count = await wishlistCollection.countDocuments(query)
       res.send({count})
     })
 
     //pagination: assign tour count
     app.get('/tour-count/:email', async(req, res)=>{
       const email = req.params.email;
-      const query = {email : email}
-      const count = await bookingCollection.estimatedDocumentCount(query)
+      const query = {guideEmail : email}
+      const count = await bookingCollection.countDocuments(query)
       res.send({count})
     })
+
+    
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {

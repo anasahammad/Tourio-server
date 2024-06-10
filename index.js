@@ -3,15 +3,19 @@ const app = express();
 const cors = require('cors');
 const port = process.env.PORT || 5000
 const dotenv = require('dotenv');
+const stripe = require('stripe')('sk_test_51PQ7D1BRNhZy5M0OdQa5qfJYnkz6rbgyGZRUOLvT9sC0RDYySlsPYtK2jSQoK5lS0GpEwonigvvdqLPxqIi8Dq3T00LAW3ZhZF'
+);
 const nodemailer = require("nodemailer");
 const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken')
+
 require('dotenv').config()
+
 
 const corsOptions = {
   origin: ['http://localhost:5173', 'http://localhost:5174', 'https://tourio-a04d8.web.app'],
   credentials: true,
-  optionSuccessStatus: 200,
+  
 }
 
 
@@ -463,7 +467,19 @@ async function run() {
       res.send({count})
     })
 
-    
+    //payment intent api
+    app.post('/create-payment-intent', async(req, res)=>{
+      const {price} = req.body;
+      const amount = Math.round(price * 100); 
+     console.log(amount);
+     const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency : 'usd',
+      payment_method_types : ['card']
+     })
+
+     res.send({clientSecret: paymentIntent.client_secret})
+    })
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {

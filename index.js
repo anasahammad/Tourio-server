@@ -1,15 +1,17 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+
 const port = process.env.PORT || 5000
-const dotenv = require('dotenv');
+
+require('dotenv').config()
 const stripe = require('stripe')('sk_test_51PQ7D1BRNhZy5M0OdQa5qfJYnkz6rbgyGZRUOLvT9sC0RDYySlsPYtK2jSQoK5lS0GpEwonigvvdqLPxqIi8Dq3T00LAW3ZhZF'
 );
 const nodemailer = require("nodemailer");
 const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken')
 
-require('dotenv').config()
+
 
 
 const corsOptions = {
@@ -185,7 +187,7 @@ async function run() {
 
   
     //get all users
-    app.get('/users', verifyToken, verifyAdmin,  async(req, res)=>{
+    app.get('/users',   async(req, res)=>{
       const page = parseInt(req.query.page)
       const size = parseInt(req.query.size)
       const search = req?.query.search;
@@ -310,8 +312,10 @@ async function run() {
     app.get('/tour-type/:type', async(req, res)=>{
 
       const type = req.params.type;
+      console.log(type);
       
       const query = {tourTypes: type }
+      
       const result = await packageCollection.find(query).toArray()
       res.send(result)
     })
@@ -332,7 +336,7 @@ async function run() {
 
 
     //get a booking for a specific tourist
-    app.get('/booking/:email', verifyToken, async(req, res)=>{
+    app.get('/booking/:email',  async(req, res)=>{
 
       // if(req?.query.email !== req?.user.email){
       //   return res.status(403).send({message: 'forbidden access'})
@@ -346,14 +350,14 @@ async function run() {
     })
 
     //cancel or delete a booking for a specific user
-    app.delete('/delete-booking/:id', verifyToken, async(req, res)=>{
+    app.delete('/delete-booking/:id', async(req, res)=>{
       const id = req.params.id;
       const query = {_id: new ObjectId(id)}
       const result = await bookingCollection.deleteOne(query)
       res.send(result)
     })
     //get all assign tours for a specific guide
-    app.get('/assign-tours/:email', verifyToken, verifyGuide, async(req, res)=>{
+    app.get('/assign-tours/:email',  async(req, res)=>{
       const page = parseInt(req.query.page)
       const size = parseInt(req.query.size)
       const email = req.params.email;
@@ -392,7 +396,7 @@ async function run() {
     })
 
     //get a specific tourist wishlist
-    app.get('/wishlist/:email', verifyToken, async(req, res)=>{
+    app.get('/wishlist/:email',  async(req, res)=>{
       const email = req.params.email;
       const query = {touristEmail : email}
 
@@ -403,7 +407,7 @@ async function run() {
     })
  
     //delete api for remove wishlist for a tourist
-    app.delete('/wish/:id', verifyToken, async(req, res)=>{
+    app.delete('/wish/:id',  async(req, res)=>{
       const id = req.params.id;
       const query = {_id : new ObjectId(id)}
       const result = await wishlistCollection.deleteOne(query)

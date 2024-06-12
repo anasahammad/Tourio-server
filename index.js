@@ -3,7 +3,6 @@ const app = express();
 const cors = require('cors');
 
 const port = process.env.PORT || 5000
-
 require('dotenv').config()
 const stripe = require('stripe')('sk_test_51PQ7D1BRNhZy5M0OdQa5qfJYnkz6rbgyGZRUOLvT9sC0RDYySlsPYtK2jSQoK5lS0GpEwonigvvdqLPxqIi8Dq3T00LAW3ZhZF'
 );
@@ -133,14 +132,16 @@ async function run() {
 
 
     //verify the admin route
-    const verifyAdmin = async (req, res, next)=>{
-     const user = req.user;
-     const query = {email : user?.email}
-     const result = await userCollection.findOne(query)
-     if(!result || result.role !== 'admin'){
-      return res.status(401).send({message: 'unauthorized access'})
-     }
-     next()
+    const verifyAdmin = async (req, res, next) => {
+     
+      const user = req.user
+      const query = { email: user?.email }
+      const result = await userCollection.findOne(query)
+
+      if (!result || result?.role !== 'admin')
+        return res.status(401).send({ message: 'unauthorized access!!' })
+
+      next()
     }
     //verify the admin route
     const verifyGuide = async (req, res, next)=>{
@@ -187,7 +188,7 @@ async function run() {
 
   
     //get all users
-    app.get('/users',   async(req, res)=>{
+    app.get('/users', verifyToken, verifyAdmin,  async(req, res)=>{
       const page = parseInt(req.query.page)
       const size = parseInt(req.query.size)
       const search = req?.query.search;
@@ -336,7 +337,7 @@ async function run() {
 
 
     //get a booking for a specific tourist
-    app.get('/booking/:email',  async(req, res)=>{
+    app.get('/booking/:email', verifyToken, async(req, res)=>{
 
       // if(req?.query.email !== req?.user.email){
       //   return res.status(403).send({message: 'forbidden access'})
@@ -350,14 +351,14 @@ async function run() {
     })
 
     //cancel or delete a booking for a specific user
-    app.delete('/delete-booking/:id', async(req, res)=>{
+    app.delete('/delete-booking/:id', verifyToken, async(req, res)=>{
       const id = req.params.id;
       const query = {_id: new ObjectId(id)}
       const result = await bookingCollection.deleteOne(query)
       res.send(result)
     })
     //get all assign tours for a specific guide
-    app.get('/assign-tours/:email',  async(req, res)=>{
+    app.get('/assign-tours/:email', verifyToken, verifyGuide, async(req, res)=>{
       const page = parseInt(req.query.page)
       const size = parseInt(req.query.size)
       const email = req.params.email;
@@ -396,7 +397,7 @@ async function run() {
     })
 
     //get a specific tourist wishlist
-    app.get('/wishlist/:email',  async(req, res)=>{
+    app.get('/wishlist/:email', verifyToken, async(req, res)=>{
       const email = req.params.email;
       const query = {touristEmail : email}
 
@@ -407,7 +408,7 @@ async function run() {
     })
  
     //delete api for remove wishlist for a tourist
-    app.delete('/wish/:id',  async(req, res)=>{
+    app.delete('/wish/:id', verifyToken, async(req, res)=>{
       const id = req.params.id;
       const query = {_id : new ObjectId(id)}
       const result = await wishlistCollection.deleteOne(query)
